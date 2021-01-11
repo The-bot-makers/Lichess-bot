@@ -25,7 +25,7 @@ SECRET_KEY = '9$uo$52=8cd0i6(w((xvp2pey_g^^+2y@j%sba!wy!ce631*2r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['masterbotlichess.herokuapp.com']
 
 
 # Application definition
