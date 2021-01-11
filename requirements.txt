@@ -1,7 +1,6 @@
 certifi
 chardet
 idna
-chess==1.3.3
 PyYAML
 requests
 urllib3
