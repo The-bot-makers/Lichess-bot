@@ -21,6 +21,7 @@ from conversation import Conversation, ChatLine
 from functools import partial
 from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError, ReadTimeout
 from urllib3.exceptions import ProtocolError
+import os
 
 logger = logging.getLogger(__name__)
 
