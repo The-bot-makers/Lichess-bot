@@ -1,4 +1,4 @@
 #!/bin/bash
-chmod a+x sf
+chmod a+x engines/sf
 ls engines -l
 python lichessbot.py
