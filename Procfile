@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath bot bot.wsgi
+worker: bash startbot.sh
