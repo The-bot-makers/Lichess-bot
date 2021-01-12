@@ -131,7 +131,9 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     if time<0.3:
         time=0.3
     board = chess.Board()
-    engineeng = engine.SimpleEngine.popen_uci("sf")
+    cfg = config["engine"]
+    engine_path = os.path.join(cfg["dir"], cfg["name"])
+    engineeng = engine.SimpleEngine.popen_uci(engine_path)
 
     logger.info("+++ {}".format(game))
 
