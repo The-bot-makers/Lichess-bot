@@ -109,7 +109,6 @@ def start(li, user_profile, engine_factory, config):
                 ingame=True
                 play_game(li, game_id, engine_factory, user_profile, config)
                 ingame=False
-                break
             
     logger.info("Terminated")
     control_stream.terminate()
