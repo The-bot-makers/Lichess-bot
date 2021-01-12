@@ -5,6 +5,4 @@ PyYAML
 requests
 urllib3
 backoff
-gunicorn
-postgres
 python-chess
