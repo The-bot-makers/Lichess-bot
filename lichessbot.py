@@ -137,6 +137,12 @@ def play_game(li, game_id, engine_factory, user_profile, config):
 
     logger.info("+++ {}".format(game))
 
+    if is_engine_move(game, moves) and not is_game_over(game):
+        move=engineeng.play(board,engine.Limit(time=time))
+        board.push(move.move)
+        li.make_move(game.id, move.move)
+        logger.info(move.move)
+
     while not terminated:
         try:
             binary_chunk = next(lines)
