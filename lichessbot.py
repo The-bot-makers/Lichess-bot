@@ -131,7 +131,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     if time<0.3:
         time=0.3
     board = chess.Board()
-    engineeng = engine.SimpleEngine.popen_uci("stockfish.exe")
+    engineeng = engine.SimpleEngine.popen_uci("sf")
 
     logger.info("+++ {}".format(game))
 
