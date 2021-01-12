@@ -2,7 +2,7 @@ token: "bkrondFNckaGyUHC"    # lichess OAuth2 Token
 url: "https://lichess.org/"  # lichess base URL
 
 engine:                      # engine settings
-  dir: "."          # dir containing engines, relative to this project
+  dir: "./engines/"          # dir containing engines, relative to this project
   name: "sf"        # binary name of the engine to use
   protocol: "uci"            # "uci" or "xboard"
   uci_ponder: true           # think on opponent time; only works if "protocol" is "uci"
