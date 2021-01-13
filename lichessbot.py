@@ -126,8 +126,8 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     game = model.Game(initial_state, user_profile["username"], li.baseUrl, config.get("abort_time", 20))
     timelim=game.state["btime"]
     time=round(timelim/150*60,1)
-    if time>3:
-        time=3
+    if time>6:
+        time=6
     if time<0.3:
         time=0.3
     board = chess.Board()
