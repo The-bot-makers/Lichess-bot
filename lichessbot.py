@@ -125,7 +125,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     initial_state = json.loads(next(lines).decode('utf-8'))
     game = model.Game(initial_state, user_profile["username"], li.baseUrl, config.get("abort_time", 20))
     timelim=game.state["btime"]
-    time=round(timelim/200*60,1)
+    time=round(timelim/150*60,1)
     if time>3:
         time=3
     if time<0.3:
