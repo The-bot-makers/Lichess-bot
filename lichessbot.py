@@ -141,23 +141,22 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     logger.info("+++ {}".format(game))
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
-        if not is_game_over(game) and is_engine_move(game, moves):
-            with chess.polyglot.open_reader("book.bin") as reader:
-                global movesob
-                global weight
-                movesob=[]
-                weight=[]
-                for entry in reader.find_all(board):
-                    movesob.append(entry.move)
-                    weight.append(entry.weight)
-            if len(weight)==0:
-                move=engineeng.play(board,engine.Limit(time=time))
-                board.push(move.move)
-                li.make_move(game.id, move.move)
-            else:
-                move=movesob[weight.index(max(weight))]
-                board.push(move)
-                li.make_move(game.id, move)
+        with chess.polyglot.open_reader("book.bin") as reader:
+            global movesob
+            global weight
+            movesob=[]
+            weight=[]
+            for entry in reader.find_all(board):
+                movesob.append(entry.move)
+                weight.append(entry.weight)
+        if len(weight)==0:
+            move=engineeng.play(board,engine.Limit(time=time))
+            board.push(move.move)
+            li.make_move(game.id, move.move)
+        else:
+            move=movesob[weight.index(max(weight))]
+            board.push(move)
+            li.make_move(game.id, move)
 
     while not terminated:
         try:
