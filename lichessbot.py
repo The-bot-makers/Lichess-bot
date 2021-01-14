@@ -27,7 +27,7 @@ import threading
 logger = logging.getLogger(__name__)
 
 ingame=False
-moves=[]
+movesob=[]
 weight=[]
 
 try:
@@ -143,19 +143,19 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
         if not is_game_over(game) and is_engine_move(game, moves):
             with chess.polyglot.open_reader("book.bin") as reader:
-                global moves
+                global movesob
                 global weight
-                moves=[]
+                movesob=[]
                 weight=[]
                 for entry in reader.find_all(board):
-                    moves.append(entry.move)
+                    movesob.append(entry.move)
                     weight.append(entry.weight)
             if len(weight)==0:
                 move=engineeng.play(board,engine.Limit(time=time))
                 board.push(move.move)
                 li.make_move(game.id, move.move)
             else:
-                move=moves[weight.index(max(weight))]
+                move=movesob[weight.index(max(weight))]
                 board.push(move)
                 li.make_move(game.id, move)
 
