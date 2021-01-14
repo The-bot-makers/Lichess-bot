@@ -156,10 +156,21 @@ def play_game(li, game_id, engine_factory, user_profile, config):
                 moves = upd["moves"].split()
                 board = update_board(board, moves[-1])
                 if not is_game_over(game) and is_engine_move(game, moves):
-                    move=engineeng.play(board,engine.Limit(time=time))
-                    board.push(move.move)
-                    li.make_move(game.id, move.move)
-                    logger.info(move.move)
+                    with chess.polyglot.open_reader("book.bin") as reader:
+                        moves=[]
+                        weight=[]
+                        for entry in reader.find_all(board):
+                            moves.append(entry.move)
+                            weight.append(entry.weight)
+                    if len(weight)==0:
+                        move=engineeng.play(board,engine.Limit(time=time))
+                        board.push(move.move)
+                        li.make_move(game.id, move.move)
+                    else:
+                        move=moves[weight.index(max(weight))]
+                        board.push(move)
+                        li.make_move(game.id, move)
+                        
                 if board.turn == chess.WHITE:
                     game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
                 else:
