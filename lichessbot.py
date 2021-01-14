@@ -22,6 +22,7 @@ from functools import partial
 from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError, ReadTimeout
 from urllib3.exceptions import ProtocolError
 import os
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ def start(li, user_profile, engine_factory, config):
     control_queue=multiprocessing.Manager().Queue()
     control_stream = Process(target=watch_control_stream, args=[control_queue,li])
     control_stream.start()
-    logger.info("execd")
+    gamesip=[]
     global ingame
     while not terminated:
         event=control_queue.get()
@@ -85,7 +86,7 @@ def start(li, user_profile, engine_factory, config):
         elif event["type"] == "challenge":
             logger.info("chlng detected")
             chlng = model.Challenge(event["challenge"])
-            if chlng.is_supported(challenge_config) and not ingame:
+            if chlng.is_supported(challenge_config):
                 logger.info("chlng supported")
                 try:
                     logger.info("    Accept {}".format(chlng))
@@ -103,12 +104,12 @@ def start(li, user_profile, engine_factory, config):
                 except:
                     pass
         elif event["type"] == "gameStart":
-            if not ingame:
-                logger.info("game detected")
-                game_id = event["game"]["id"]
-                ingame=True
-                play_game(li, game_id, engine_factory, user_profile, config)
-                ingame=False
+            logger.info("game detected")
+            game_id = event["game"]["id"]
+            ingame=True
+            gamesip.append(threading.Thread(target=play_game,args=(li, game_id, engine_factory, user_profile, config,)))
+            gamesip[-1].start()
+            ingame=False
             
     logger.info("Terminated")
     control_stream.terminate()
@@ -138,10 +139,21 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     logger.info("+++ {}".format(game))
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
-        move=engineeng.play(board,engine.Limit(time=time))
-        board.push(move.move)
-        li.make_move(game.id, move.move)
-        logger.info(move.move)
+        if not is_game_over(game) and is_engine_move(game, moves):
+            with chess.polyglot.open_reader("book.bin") as reader:
+                moves=[]
+                weight=[]
+                for entry in reader.find_all(board):
+                    moves.append(entry.move)
+                    weight.append(entry.weight)
+            if len(weight)==0:
+                move=engineeng.play(board,engine.Limit(time=time))
+                board.push(move.move)
+                li.make_move(game.id, move.move)
+            else:
+                move=moves[weight.index(max(weight))]
+                board.push(move)
+                li.make_move(game.id, move)
 
     while not terminated:
         try:
