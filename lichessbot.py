@@ -27,6 +27,8 @@ import threading
 logger = logging.getLogger(__name__)
 
 ingame=False
+moves=[]
+weight=[]
 
 try:
     from http.client import RemoteDisconnected
@@ -139,8 +141,6 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     logger.info("+++ {}".format(game))
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
-        moves=[]
-        weight=[]
         if not is_game_over(game) and is_engine_move(game, moves):
             with chess.polyglot.open_reader("book.bin") as reader:
                 global moves
