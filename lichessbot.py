@@ -139,8 +139,12 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     logger.info("+++ {}".format(game))
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
+        moves=[]
+        weight=[]
         if not is_game_over(game) and is_engine_move(game, moves):
             with chess.polyglot.open_reader("book.bin") as reader:
+                global moves
+                global weight
                 moves=[]
                 weight=[]
                 for entry in reader.find_all(board):
