@@ -1,6 +1,7 @@
 import argparse
 import chess
 from chess import engine
+from chess import variant
 import chess.polyglot
 import engine_wrapper
 import model
@@ -257,7 +258,7 @@ def setup_board(game):
     elif game.variant_name == "From Position":
         board = chess.Board(game.initial_fen)
     else:
-        VariantBoard = find_variant(game.variant_name)
+        VariantBoard = variant.find_variant(game.variant_name)
         board = VariantBoard()
     moves = game.state["moves"].split()
     for move in moves:
