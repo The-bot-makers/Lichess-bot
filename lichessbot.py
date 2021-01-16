@@ -130,9 +130,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     board = setup_board(game)
     cfg = config["engine"]
 
-    variant=game.perf_name
-
-    if variant=="rapid" or variant=="classical" or variant=="correspondence":
+    if type(board).uci_variant=="standard":
         engine_path = os.path.join(cfg["dir"], cfg["name"])
         engineeng = engine.SimpleEngine.popen_uci(engine_path)
 
