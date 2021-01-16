@@ -126,78 +126,144 @@ def play_game(li, game_id, engine_factory, user_profile, config):
         time=6
     if time<0.3:
         time=0.3
-    board = chess.Board()
+    board = setup_board(game)
     cfg = config["engine"]
-    engine_path = os.path.join(cfg["dir"], cfg["name"])
-    engineeng = engine.SimpleEngine.popen_uci(engine_path)
 
-    logger.info("+++ {}".format(game))
+    variant=game.perf_name
 
-    if is_engine_move(game, board.move_stack) and not is_game_over(game):
+    if variant=="rapid" or variant=="classical" or variant=="correspondence":
+        engine_path = os.path.join(cfg["dir"], cfg["name"])
+        engineeng = engine.SimpleEngine.popen_uci(engine_path)
+
+        logger.info("+++ {}".format(game))
+
+        if is_engine_move(game, board.move_stack) and not is_game_over(game):
+            with chess.polyglot.open_reader("book.bin") as reader:
+                movesob=[]
+                weight=[]
+                for entry in reader.find_all(board):
+                    movesob.append(entry.move)
+                    weight.append(entry.weight)
+            if len(weight)==0:
+                move=engineeng.play(board,engine.Limit(time=time))
+                board.push(move.move)
+                li.make_move(game.id, move.move)
+            else:
+                move=movesob[weight.index(max(weight))]
+                board.push(move)
+                li.make_move(game.id, move)
+
         with chess.polyglot.open_reader("book.bin") as reader:
-            movesob=[]
-            weight=[]
-            for entry in reader.find_all(board):
-                movesob.append(entry.move)
-                weight.append(entry.weight)
-        if len(weight)==0:
+            while not terminated:
+                try:
+                    binary_chunk = next(lines)
+                except(StopIteration):
+                    break
+                upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
+                u_type = upd["type"] if upd else "ping"
+                if not board.is_game_over():
+                    if u_type == "gameState":
+                        game.state=upd
+                        moves = upd["moves"].split()
+                        board = update_board(board, moves[-1])
+                        if not is_game_over(game) and is_engine_move(game, moves):
+                            moves=[]
+                            weight=[]
+                            for entry in reader.find_all(board):
+                                moves.append(entry.move)
+                                weight.append(entry.weight)
+                            if len(weight)==0:
+                                move=engineeng.play(board,engine.Limit(time=time))
+                                board.push(move.move)
+                                li.make_move(game.id, move.move)
+                            else:
+                                move=moves[weight.index(max(weight))]
+                                board.push(move)
+                                li.make_move(game.id, move)
+                                
+                        if board.turn == chess.WHITE:
+                            game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
+                        else:
+                            game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
+                    elif u_type == "ping":
+                        if game.should_abort_now():
+                            logger.info("    Aborting {} by lack of activity".format(game.url()))
+                            li.abort(game.id)
+                            break
+                        elif game.should_terminate_now():
+                            logger.info("    Terminating {} by lack of activity".format(game.url()))
+                            if game.is_abortable():
+                                li.abort(game.id)
+                            break
+                else:
+                    logger.info("game over")
+                    engineeng.quit()
+                    break
+    else:
+        engine_path = os.path.join(cfg["dir"], cfg["fairyname"])
+        engineeng = engine.SimpleEngine.popen_uci(engine_path)
+
+        logger.info("+++ {}".format(game))
+
+        if is_engine_move(game, board.move_stack) and not is_game_over(game):
             move=engineeng.play(board,engine.Limit(time=time))
             board.push(move.move)
             li.make_move(game.id, move.move)
-        else:
-            move=movesob[weight.index(max(weight))]
-            board.push(move)
-            li.make_move(game.id, move)
 
-    with chess.polyglot.open_reader("book.bin") as reader:
-        while not terminated:
-            try:
-                binary_chunk = next(lines)
-            except(StopIteration):
-                break
-            upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
-            u_type = upd["type"] if upd else "ping"
-            if not board.is_game_over():
-                if u_type == "gameState":
-                    game.state=upd
-                    moves = upd["moves"].split()
-                    board = update_board(board, moves[-1])
-                    if not is_game_over(game) and is_engine_move(game, moves):
-                        moves=[]
-                        weight=[]
-                        for entry in reader.find_all(board):
-                            moves.append(entry.move)
-                            weight.append(entry.weight)
-                        if len(weight)==0:
+            while not terminated:
+                try:
+                    binary_chunk = next(lines)
+                except(StopIteration):
+                    break
+                upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
+                u_type = upd["type"] if upd else "ping"
+                if not board.is_game_over():
+                    if u_type == "gameState":
+                        game.state=upd
+                        moves = upd["moves"].split()
+                        board = update_board(board, moves[-1])
+                        if not is_game_over(game) and is_engine_move(game, moves):
                             move=engineeng.play(board,engine.Limit(time=time))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
+
+                                
+                        if board.turn == chess.WHITE:
+                            game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
                         else:
-                            move=moves[weight.index(max(weight))]
-                            board.push(move)
-                            li.make_move(game.id, move)
-                            
-                    if board.turn == chess.WHITE:
-                        game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
-                    else:
-                        game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
-                elif u_type == "ping":
-                    if game.should_abort_now():
-                        logger.info("    Aborting {} by lack of activity".format(game.url()))
-                        li.abort(game.id)
-                        break
-                    elif game.should_terminate_now():
-                        logger.info("    Terminating {} by lack of activity".format(game.url()))
-                        if game.is_abortable():
+                            game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
+                    elif u_type == "ping":
+                        if game.should_abort_now():
+                            logger.info("    Aborting {} by lack of activity".format(game.url()))
                             li.abort(game.id)
-                        break
-            else:
-                logger.info("game over")
-                engineeng.quit()
-                break
+                            break
+                        elif game.should_terminate_now():
+                            logger.info("    Terminating {} by lack of activity".format(game.url()))
+                            if game.is_abortable():
+                                li.abort(game.id)
+                            break
+                else:
+                    logger.info("game over")
+                    engineeng.quit()
+                    break
 
 def is_white_to_move(game, moves):
     return len(moves) % 2 == (0 if game.white_starts else 1)
+
+
+def setup_board(game):
+    if game.variant_name.lower() == "chess960":
+        board = chess.Board(game.initial_fen, chess960=True)
+    elif game.variant_name == "From Position":
+        board = chess.Board(game.initial_fen)
+    else:
+        VariantBoard = find_variant(game.variant_name)
+        board = VariantBoard()
+    moves = game.state["moves"].split()
+    for move in moves:
+        board = update_board(board, move)
+
+    return board
 
 
 def is_engine_move(game, moves):
