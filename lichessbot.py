@@ -211,42 +211,42 @@ def play_game(li, game_id, engine_factory, user_profile, config):
             board.push(move.move)
             li.make_move(game.id, move.move)
 
-            while not terminated:
-                try:
-                    binary_chunk = next(lines)
-                except(StopIteration):
-                    break
-                upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
-                u_type = upd["type"] if upd else "ping"
-                if not board.is_game_over():
-                    if u_type == "gameState":
-                        game.state=upd
-                        moves = upd["moves"].split()
-                        board = update_board(board, moves[-1])
-                        if not is_game_over(game) and is_engine_move(game, moves):
-                            move=engineeng.play(board,engine.Limit(time=time))
-                            board.push(move.move)
-                            li.make_move(game.id, move.move)
+        while not terminated:
+            try:
+                binary_chunk = next(lines)
+            except(StopIteration):
+                break
+            upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
+            u_type = upd["type"] if upd else "ping"
+            if not board.is_game_over():
+                if u_type == "gameState":
+                    game.state=upd
+                    moves = upd["moves"].split()
+                    board = update_board(board, moves[-1])
+                    if not is_game_over(game) and is_engine_move(game, moves):
+                        move=engineeng.play(board,engine.Limit(time=time))
+                        board.push(move.move)
+                        li.make_move(game.id, move.move)
 
-                                
-                        if board.turn == chess.WHITE:
-                            game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
-                        else:
-                            game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
-                    elif u_type == "ping":
-                        if game.should_abort_now():
-                            logger.info("    Aborting {} by lack of activity".format(game.url()))
+                            
+                    if board.turn == chess.WHITE:
+                        game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
+                    else:
+                        game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
+                elif u_type == "ping":
+                    if game.should_abort_now():
+                        logger.info("    Aborting {} by lack of activity".format(game.url()))
+                        li.abort(game.id)
+                        break
+                    elif game.should_terminate_now():
+                        logger.info("    Terminating {} by lack of activity".format(game.url()))
+                        if game.is_abortable():
                             li.abort(game.id)
-                            break
-                        elif game.should_terminate_now():
-                            logger.info("    Terminating {} by lack of activity".format(game.url()))
-                            if game.is_abortable():
-                                li.abort(game.id)
-                            break
-                else:
-                    logger.info("game over")
-                    engineeng.quit()
-                    break
+                        break
+            else:
+                logger.info("game over")
+                engineeng.quit()
+                break
 
 def is_white_to_move(game, moves):
     return len(moves) % 2 == (0 if game.white_starts else 1)
