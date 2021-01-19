@@ -120,6 +120,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     bullet=False
     #Initial response of stream will be the full game info. Store it
     initial_state = json.loads(next(lines).decode('utf-8'))
+    print(initial_state)
     game = model.Game(initial_state, user_profile["username"], li.baseUrl, config.get("abort_time", 20))
     timelim=game.state["btime"]
     if timelim>=0.5 and timelim<=2:
