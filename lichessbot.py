@@ -336,7 +336,7 @@ if __name__=="__main__":
     is_bot = user_profile.get("title") == "BOT"
     logger.info("Welcome {}!".format(username))
 
-    if args.u is True and is_bot is False:
+    if is_bot is False:
         is_bot = upgrade_account(li)
 
     if is_bot:
