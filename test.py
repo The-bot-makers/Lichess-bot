@@ -1,7 +1,7 @@
 from chess import polyglot
 from chess import variant
 import chess
-board = variant.AntichessBoard()
+board = variant.GiveawayBoard()
 while not board.is_game_over():
     with chess.polyglot.open_reader("bookchen.bin") as reader:
         moves=[]
