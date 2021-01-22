@@ -5,6 +5,7 @@ engine:                      # engine settings
   dir: "./engines/"          # dir containing engines, relative to this project
   name: "sf"        # binary name of the engine to use
   fairyname: "fsf"
+  lcname: "lsf"
   protocol: "uci"            # "uci" or "xboard"
   uci_ponder: true           # think on opponent time; only works if "protocol" is "uci"
   polyglot:
