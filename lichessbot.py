@@ -250,10 +250,10 @@ def intro():
     return r"""
     .   _/|
     .  // o\
-    .  || ._)  lichess-bot %s
+    .  || ._)  lichess-bot
     .  //__\
     .  )___(   Play on Lichess with a bot
-    """ % __version__
+    """
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Play on Lichess with a bot')
