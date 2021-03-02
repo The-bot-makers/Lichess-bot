@@ -11,7 +11,6 @@ import logging
 import multiprocessing
 from multiprocessing import Process
 import traceback
-import logging_pool
 import signal
 import sys
 import time
@@ -23,7 +22,6 @@ from functools import partial
 from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError, ReadTimeout
 from urllib3.exceptions import ProtocolError
 import os
-import threading
 
 logger = logging.getLogger(__name__)
 gamessss=0
@@ -72,7 +70,6 @@ def watch_control_stream(control_queue, li):
 
 def start(li, user_profile, engine_factory, config):
     challenge_config = config["challenge"]
-    max_games = challenge_config.get("concurrency", 1)
     logger.info("You're now connected to {} and awaiting challenges.".format(config["url"]))
     control_queue=multiprocessing.Manager().Queue()
     control_stream = Process(target=watch_control_stream, args=[control_queue,li])
@@ -90,8 +87,6 @@ def start(li, user_profile, engine_factory, config):
                 try:
                     logger.info("    Accept {}".format(chlng))
                     response = li.accept_challenge(chlng.id)
-                    ppp={"type":"gameStart", "game":{"id":chlng.id}}
-                    control_queue.put_nowait(ppp)
                     logger.info(chlng.id)
                 except (HTTPError, ReadTimeout) as exception:
                     if isinstance(exception, HTTPError) and exception.response.status_code == 404: # ignore missing challenge
@@ -150,6 +145,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':3})
     engineeng.configure({'Hash':75})
+    engineeng.configure({'Ponder':True})
 
     logger.info("+++ {}".format(game))
 
