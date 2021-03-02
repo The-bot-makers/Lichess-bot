@@ -145,7 +145,6 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':3})
     engineeng.configure({'Hash':75})
-    engineeng.configure({'Ponder':True})
 
     logger.info("+++ {}".format(game))
 
