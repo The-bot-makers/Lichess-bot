@@ -145,6 +145,8 @@ def play_game(li, game_id, engine_factory, user_profile, config):
         engine_path = os.path.join(cfg["dir"], cfg["fairyname"])
         bookname="bookchen.bin"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
+    engineeng.configure({'Threads':3})
+    engineeng.configure({'Hash':64})
 
     logger.info("+++ {}".format(game))
 
