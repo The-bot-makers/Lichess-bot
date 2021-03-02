@@ -29,8 +29,7 @@ ENDPOINTS = {
 # docs: https://lichess.org/api
 class Lichess():
 
-    def __init__(self, token, url, version):
-        self.version = version
+    def __init__(self, token, url):
         self.header = {
             "Authorization": "Bearer {}".format(token)
         }
@@ -105,7 +104,3 @@ class Lichess():
 
     def resign(self, game_id):
         self.api_post(ENDPOINTS["resign"].format(game_id))
-
-    def set_user_agent(self, username):
-        self.header.update({"User-Agent": "lichess-bot/{} user:{}".format(self.version, username)})
-        self.session.headers.update(self.header)

@@ -3,24 +3,18 @@ import chess
 from chess import engine
 from chess import variant
 import chess.polyglot
-import engine_wrapper
 import model
 import json
 import lichess
 import logging
 import multiprocessing
 from multiprocessing import Process
-import traceback
 import signal
-import sys
-import time
 import backoff
 import threading
 from config import load_config
 from conversation import Conversation, ChatLine
-from functools import partial
-from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError, ReadTimeout
-from urllib3.exceptions import ProtocolError
+from requests.exceptions import HTTPError, ReadTimeout
 import os
 
 logger = logging.getLogger(__name__)
@@ -31,8 +25,6 @@ try:
     # New in version 3.5: Previously, BadStatusLine('') was raised.
 except ImportError:
     from http.client import BadStatusLine as RemoteDisconnected
-
-__version__ = "1.1.5"
 
 terminated = False
 
@@ -54,7 +46,6 @@ def upgrade_account(li):
     return True
 
 def watch_control_stream(control_queue, li):
-    logger.info("start")
     while not terminated:
         try:
             response = li.get_event_stream()
@@ -68,7 +59,7 @@ def watch_control_stream(control_queue, li):
             logger.info("except")
             pass
 
-def start(li, user_profile, engine_factory, config):
+def start(li, user_profile, config):
     challenge_config = config["challenge"]
     logger.info("You're now connected to {} and awaiting challenges.".format(config["url"]))
     control_queue=multiprocessing.Manager().Queue()
@@ -87,7 +78,6 @@ def start(li, user_profile, engine_factory, config):
                 try:
                     logger.info("    Accept {}".format(chlng))
                     response = li.accept_challenge(chlng.id)
-                    logger.info(chlng.id)
                 except (HTTPError, ReadTimeout) as exception:
                     if isinstance(exception, HTTPError) and exception.response.status_code == 404: # ignore missing challenge
                         logger.info("    Skip missing {}".format(chlng))
@@ -100,7 +90,7 @@ def start(li, user_profile, engine_factory, config):
         elif event["type"] == "gameStart":
             logger.info("game detected")
             game_id = event["game"]["id"]
-            gamesip.append(threading.Thread(target=play_game,args=(li, game_id, engine_factory, user_profile, config,)))
+            gamesip.append(threading.Thread(target=play_game,args=(li, game_id, user_profile, config,)))
             gamesip[-1].start()
             
     logger.info("Terminated")
@@ -110,7 +100,10 @@ def start(li, user_profile, engine_factory, config):
 ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
-def play_game(li, game_id, engine_factory, user_profile, config):
+def play_game(li, game_id, user_profile, config):
+    seventydone=False
+    eightydone=False
+    ninetydone=False
     global gamessss
     gamessss+=1
     response = li.get_game_stream(game_id)
@@ -123,13 +116,13 @@ def play_game(li, game_id, engine_factory, user_profile, config):
     timelim=timelim/60
     if timelim>=0.5 and timelim<=2:
         bullet=True
-    time=round(timelim/150*60,1)
+    time=round(timelim/100*60,1)
     if time>6:
         time=6
     elif time<0.3:
         time=0.3
     if bullet:
-        time=0.2
+        time=0.3
     board = setup_board(game)
     cfg = config["engine"]
 
@@ -155,7 +148,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
             for entry in reader.find_all(board):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
-        if len(weight)==0:
+        if len(weight)==0 or max(weight)<9:
             move=engineeng.play(board,engine.Limit(time=time))
             board.push(move.move)
             li.make_move(game.id, move.move)
@@ -183,7 +176,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
                         for entry in reader.find_all(board):
                             moves.append(entry.move)
                             weight.append(entry.weight)
-                        if len(weight)==0:
+                        if len(weight)==0 or max(weight)<9:
                             move=engineeng.play(board,engine.Limit(time=time))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
@@ -196,6 +189,16 @@ def play_game(li, game_id, engine_factory, user_profile, config):
                         game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
                     else:
                         game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
+                    if len(board.move_stack)>70 and time>1.7 and not seventydone:
+                        time-=1
+                        seventydone=True
+                    if len(board.move_stack)>80 and time>1.7 and not eightydone:
+                        time-=1
+                        eightydone=True
+                    if len(board.move_stack)>90 and time>1.7 and not ninetydone:
+                        time-=1
+                        ninetydone=True
+            
                 elif u_type == "ping":
                     if game.should_abort_now():
                         logger.info("    Aborting {} by lack of activity".format(game.url()))
@@ -268,7 +271,7 @@ if __name__=="__main__":
                         format="%(asctime)-15s: %(message)s")
     logger.info(intro())
     CONFIG = load_config(args.config or "./config.yml")
-    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], __version__)
+    li = lichess.Lichess(CONFIG["token"], CONFIG["url"])
 
     user_profile = li.get_profile()
     username = user_profile["username"]
@@ -279,7 +282,6 @@ if __name__=="__main__":
         is_bot = upgrade_account(li)
 
     if is_bot:
-        engine_factory = partial(engine_wrapper.create_engine, CONFIG)
-        start(li, user_profile, engine_factory, CONFIG)
+        start(li, user_profile, CONFIG)
     else:
         logger.error("{} is not a bot account. Please upgrade it to a bot account!".format(user_profile["username"]))
