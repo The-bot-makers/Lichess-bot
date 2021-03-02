@@ -271,7 +271,7 @@ if __name__=="__main__":
                         format="%(asctime)-15s: %(message)s")
     logger.info(intro())
     CONFIG = load_config(args.config or "./config.yml")
-    li = lichess.Lichess(CONFIG["token"], CONFIG["url"])
+    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], 1.1.5)
 
     user_profile = li.get_profile()
     username = user_profile["username"]
