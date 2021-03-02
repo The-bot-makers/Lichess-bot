@@ -26,6 +26,7 @@ import os
 import threading
 
 logger = logging.getLogger(__name__)
+gamessss=0
 
 try:
     from http.client import RemoteDisconnected
@@ -84,7 +85,7 @@ def start(li, user_profile, engine_factory, config):
         elif event["type"] == "challenge":
             logger.info("chlng detected")
             chlng = model.Challenge(event["challenge"])
-            if chlng.is_supported(challenge_config):
+            if chlng.is_supported(challenge_config) and gamessss<3:
                 logger.info("chlng supported")
                 try:
                     logger.info("    Accept {}".format(chlng))
@@ -115,6 +116,8 @@ ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
 def play_game(li, game_id, engine_factory, user_profile, config):
+    global gamessss
+    gamessss+=1
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
@@ -146,7 +149,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
         bookname="bookchen.bin"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':3})
-    engineeng.configure({'Hash':64})
+    engineeng.configure({'Hash':85})
 
     logger.info("+++ {}".format(game))
 
@@ -210,6 +213,7 @@ def play_game(li, game_id, engine_factory, user_profile, config):
                         break
             else:
                 logger.info("game over")
+                gamessss-=1
                 engineeng.quit()
                 break
 
