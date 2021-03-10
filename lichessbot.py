@@ -11,14 +11,12 @@ import multiprocessing
 from multiprocessing import Process
 import signal
 import backoff
-import threading
 from config import load_config
 from conversation import Conversation, ChatLine
 from requests.exceptions import HTTPError, ReadTimeout
 import os
 
 logger = logging.getLogger(__name__)
-gamessss=0
 
 try:
     from http.client import RemoteDisconnected
@@ -65,7 +63,6 @@ def start(li, user_profile, config):
     control_queue=multiprocessing.Manager().Queue()
     control_stream = Process(target=watch_control_stream, args=[control_queue,li])
     control_stream.start()
-    gamesip=[]
     while not terminated:
         event=control_queue.get()
         if event["type"] == "terminated":
@@ -73,7 +70,7 @@ def start(li, user_profile, config):
         elif event["type"] == "challenge":
             logger.info("chlng detected")
             chlng = model.Challenge(event["challenge"])
-            if chlng.is_supported(challenge_config) and gamessss<3:
+            if chlng.is_supported(challenge_config):
                 logger.info("chlng supported")
                 try:
                     logger.info("    Accept {}".format(chlng))
@@ -90,8 +87,7 @@ def start(li, user_profile, config):
         elif event["type"] == "gameStart":
             logger.info("game detected")
             game_id = event["game"]["id"]
-            gamesip.append(threading.Thread(target=play_game,args=(li, game_id, user_profile, config,)))
-            gamesip[-1].start()
+            play_game(li, game_id, user_profile, config)
             
     logger.info("Terminated")
     control_stream.terminate()
@@ -104,8 +100,6 @@ def play_game(li, game_id, user_profile, config):
     seventydone=False
     eightydone=False
     ninetydone=False
-    global gamessss
-    gamessss+=1
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
@@ -136,8 +130,8 @@ def play_game(li, game_id, user_profile, config):
         engine_path = os.path.join(cfg["dir"], cfg["fairyname"])
         bookname="bookchen.bin"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
-    engineeng.configure({'Threads':3})
-    engineeng.configure({'Hash':75})
+    engineeng.configure({'Threads':5})
+    engineeng.configure({'Hash':120})
 
     logger.info("+++ {}".format(game))
 
@@ -211,7 +205,6 @@ def play_game(li, game_id, user_profile, config):
                         break
             else:
                 logger.info("game over")
-                gamessss-=1
                 engineeng.quit()
                 break
 
