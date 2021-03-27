@@ -97,9 +97,6 @@ ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
 def play_game(li, game_id, user_profile, config):
-    seventydone=False
-    eightydone=False
-    ninetydone=False
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
@@ -110,7 +107,7 @@ def play_game(li, game_id, user_profile, config):
     timelim=timelim/60
     if timelim>=0.5 and timelim<=2:
         bullet=True
-    time=round(timelim/100*60,1)
+    time=round(timelim/85*60,1)
     if time>6:
         time=6
     elif time<0.3:
@@ -183,15 +180,6 @@ def play_game(li, game_id, user_profile, config):
                         game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
                     else:
                         game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
-                    if len(board.move_stack)>70 and time>1.7 and not seventydone:
-                        time-=1
-                        seventydone=True
-                    if len(board.move_stack)>80 and time>1.7 and not eightydone:
-                        time-=1
-                        eightydone=True
-                    if len(board.move_stack)>90 and time>1.7 and not ninetydone:
-                        time-=1
-                        ninetydone=True
             
                 elif u_type == "ping":
                     if game.should_abort_now():
