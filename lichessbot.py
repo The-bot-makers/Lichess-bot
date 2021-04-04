@@ -3,18 +3,27 @@ import chess
 from chess import engine
 from chess import variant
 import chess.polyglot
+import engine_wrapper
 import model
 import json
 import lichess
 import logging
 import multiprocessing
 from multiprocessing import Process
+import traceback
+import logging_pool
 import signal
+import sys
+import time
 import backoff
+import threading
 from config import load_config
 from conversation import Conversation, ChatLine
-from requests.exceptions import HTTPError, ReadTimeout
+from functools import partial
+from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError, ReadTimeout
+from urllib3.exceptions import ProtocolError
 import os
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +32,8 @@ try:
     # New in version 3.5: Previously, BadStatusLine('') was raised.
 except ImportError:
     from http.client import BadStatusLine as RemoteDisconnected
+
+__version__ = "1.1.5"
 
 terminated = False
 
@@ -44,6 +55,7 @@ def upgrade_account(li):
     return True
 
 def watch_control_stream(control_queue, li):
+    logger.info("start")
     while not terminated:
         try:
             response = li.get_event_stream()
@@ -57,12 +69,14 @@ def watch_control_stream(control_queue, li):
             logger.info("except")
             pass
 
-def start(li, user_profile, config):
+def start(li, user_profile, engine_factory, config):
     challenge_config = config["challenge"]
+    max_games = challenge_config.get("concurrency", 1)
     logger.info("You're now connected to {} and awaiting challenges.".format(config["url"]))
     control_queue=multiprocessing.Manager().Queue()
     control_stream = Process(target=watch_control_stream, args=[control_queue,li])
     control_stream.start()
+    gamesip=[]
     while not terminated:
         event=control_queue.get()
         if event["type"] == "terminated":
@@ -75,6 +89,9 @@ def start(li, user_profile, config):
                 try:
                     logger.info("    Accept {}".format(chlng))
                     response = li.accept_challenge(chlng.id)
+                    ppp={"type":"gameStart", "game":{"id":chlng.id}}
+                    control_queue.put_nowait(ppp)
+                    logger.info(chlng.id)
                 except (HTTPError, ReadTimeout) as exception:
                     if isinstance(exception, HTTPError) and exception.response.status_code == 404: # ignore missing challenge
                         logger.info("    Skip missing {}".format(chlng))
@@ -87,7 +104,8 @@ def start(li, user_profile, config):
         elif event["type"] == "gameStart":
             logger.info("game detected")
             game_id = event["game"]["id"]
-            play_game(li, game_id, user_profile, config)
+            gamesip.append(threading.Thread(target=play_game,args=(li, game_id, engine_factory, user_profile, config,)))
+            gamesip[-1].start()
             
     logger.info("Terminated")
     control_stream.terminate()
@@ -96,8 +114,10 @@ def start(li, user_profile, config):
 ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
-def play_game(li, game_id, user_profile, config):
-    li.DM('Unkown_2009','https://lichess.org/{}'.format(game_id))
+def play_game(li, game_id, engine_factory, user_profile, config):
+    li.DM('enticingseal','https://lichess.org/{}'.format(game_id))
+    li.chat(game_id,"player","Hello buddy! I am @Unkown_2009 This bot has been made by @Entcingseal And @master_bot. NEED A BOT? contact @master_bot :D ")
+    li.chat(game_id,"spectator","Hi Guys!  I am @Unkown_2009 This bot has been made by @Entcingseal And @master_bot. NEED A BOT? contact @master_bot XD ")
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
@@ -108,13 +128,13 @@ def play_game(li, game_id, user_profile, config):
     timelim=timelim/60
     if timelim>=0.5 and timelim<=2:
         bullet=True
-    time=round(timelim/85*60,1)
+    time=round(timelim/150*60,1)
     if time>6:
         time=6
     elif time<0.3:
         time=0.3
     if bullet:
-        time=0.3
+        time=0.2
     board = setup_board(game)
     cfg = config["engine"]
 
@@ -128,8 +148,6 @@ def play_game(li, game_id, user_profile, config):
         engine_path = os.path.join(cfg["dir"], cfg["fairyname"])
         bookname="bookchen.bin"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
-    engineeng.configure({'Threads':5})
-    engineeng.configure({'Hash':120})
 
     logger.info("+++ {}".format(game))
 
@@ -140,7 +158,7 @@ def play_game(li, game_id, user_profile, config):
             for entry in reader.find_all(board):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
-        if len(weight)==0 or max(weight)<9:
+        if len(weight)==0:
             move=engineeng.play(board,engine.Limit(time=time))
             board.push(move.move)
             li.make_move(game.id, move.move)
@@ -168,7 +186,7 @@ def play_game(li, game_id, user_profile, config):
                         for entry in reader.find_all(board):
                             moves.append(entry.move)
                             weight.append(entry.weight)
-                        if len(weight)==0 or max(weight)<9:
+                        if len(weight)==0:
                             move=engineeng.play(board,engine.Limit(time=time))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
@@ -181,7 +199,6 @@ def play_game(li, game_id, user_profile, config):
                         game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
                     else:
                         game.ping(config.get("abort_time", 20), (upd["btime"] + upd["binc"]) / 1000 + 60)
-            
                 elif u_type == "ping":
                     if game.should_abort_now():
                         logger.info("    Aborting {} by lack of activity".format(game.url()))
@@ -236,10 +253,10 @@ def intro():
     return r"""
     .   _/|
     .  // o\
-    .  || ._)  lichess-bot
+    .  || ._)  lichess-bot %s
     .  //__\
     .  )___(   Play on Lichess with a bot
-    """
+    """ % __version__
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Play on Lichess with a bot')
@@ -253,7 +270,7 @@ if __name__=="__main__":
                         format="%(asctime)-15s: %(message)s")
     logger.info(intro())
     CONFIG = load_config(args.config or "./config.yml")
-    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], "1.1.5")
+    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], __version__)
 
     user_profile = li.get_profile()
     username = user_profile["username"]
@@ -264,6 +281,7 @@ if __name__=="__main__":
         is_bot = upgrade_account(li)
 
     if is_bot:
-        start(li, user_profile, CONFIG)
+        engine_factory = partial(engine_wrapper.create_engine, CONFIG)
+        start(li, user_profile, engine_factory, CONFIG)
     else:
         logger.error("{} is not a bot account. Please upgrade it to a bot account!".format(user_profile["username"]))
