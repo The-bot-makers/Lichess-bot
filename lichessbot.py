@@ -132,6 +132,10 @@ def play_game(li, game_id, user_profile, config):
 
     logger.info("+++ {}".format(game))
 
+    engine_cfg = config["engine"]
+    is_uci = engine_cfg["protocol"] == "uci"
+    delay_seconds = config.get("rate_limiting_delay", 0)/1000
+
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
         with chess.polyglot.open_reader(bookname) as reader:
             movesob=[]
@@ -143,6 +147,7 @@ def play_game(li, game_id, user_profile, config):
             move=engineeng.play(board)
             board.push(move.move)
             li.make_move(game.id, move.move)
+            time.sleep(delay_seconds)
         else:
             move=movesob[weight.index(max(weight))]
             board.push(move)
