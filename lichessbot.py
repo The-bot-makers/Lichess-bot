@@ -134,7 +134,6 @@ def play_game(li, game_id, user_profile, config):
     logger.info("+++ {}".format(game))
 
     engine_cfg = config["engine"]
-    is_uci = engine_cfg["protocol"] == "uci"
     delay_seconds = config.get("rate_limiting_delay", 0)/1000
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
