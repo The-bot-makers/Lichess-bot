@@ -140,7 +140,7 @@ def play_game(li, game_id, user_profile, config):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
         if len(weight)==0 or max(weight)<9:
-            move=engineeng.play(board,engine.Limit())
+            move=engineeng.play(board)
             board.push(move.move)
             li.make_move(game.id, move.move)
         else:
@@ -168,7 +168,7 @@ def play_game(li, game_id, user_profile, config):
                             moves.append(entry.move)
                             weight.append(entry.weight)
                         if len(weight)==0 or max(weight)<9:
-                            move=engineeng.play(board,engine.Limit())
+                            move=engineeng.play(board)
                             board.push(move.move)
                             li.make_move(game.id, move.move)
                         else:
