@@ -100,20 +100,15 @@ ponder_results = {}
 def play_game(li, game_id, user_profile, config):
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
-    bullet=False
     #Initial response of stream will be the full game info. Store it
     initial_state = json.loads(next(lines).decode('utf-8'))
     game = model.Game(initial_state, user_profile["username"], li.baseUrl, config.get("abort_time", 20))
     timelim=game.state["btime"]/1000
     timelim=timelim/60
-    if timelim>=0.5 and timelim<=2:
-        bullet=True
     timep=round(timelim/85*60,1)
-    if timep>6:
-        timep=6
+    if timep>10:
+        timep=10
     elif timep<0.3:
-        timep=0.3
-    if bullet:
         timep=0.3
     board = setup_board(game)
     cfg = config["engine"]
@@ -144,7 +139,7 @@ def play_game(li, game_id, user_profile, config):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
         if len(weight)==0 or max(weight)<9:
-            move=engineeng.play(board,engine.Limit(white_clock=game.state['wtime'],black_clock=game.state['btime'],white_inc=game.state['winc'],black_inc=game.state['binc']))
+            move=engineeng.play(board,engine.Limit(time=timep))
             board.push(move.move)
             li.make_move(game.id, move.move)
             time.sleep(delay_seconds)
@@ -173,7 +168,14 @@ def play_game(li, game_id, user_profile, config):
                             moves.append(entry.move)
                             weight.append(entry.weight)
                         if len(weight)==0 or max(weight)<9:
-                            move=engineeng.play(board,engine.Limit(white_clock=upd['wtime'],black_clock=upd['btime'],white_inc=upd['winc'],black_inc=upd['binc']))
+                            timelim=game.state["btime"]/1000
+                            timelim=timelim/60
+                            timep=round(timelim/85*60,1)
+                            if timep>10:
+                                timep=10
+                            elif timep<0.3:
+                                timep=0.3
+                            move=engineeng.play(board,engine.Limit())
                             board.push(move.move)
                             li.make_move(game.id, move.move)
                             time.sleep(delay_seconds)
