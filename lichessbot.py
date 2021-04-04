@@ -170,12 +170,13 @@ def play_game(li, game_id, user_profile, config):
                         if len(weight)==0 or max(weight)<9:
                             timelim=game.state["btime"]/1000
                             timelim=timelim/60
-                            timep=round(timelim/85*60,1)
+                            divtime=85+int(len(board.move_stack)/2)
+                            timep=round(timelim/divtime*60,1)
                             if timep>10:
                                 timep=10
                             elif timep<0.3:
                                 timep=0.3
-                            move=engineeng.play(board,engine.Limit())
+                            move=engineeng.play(board,engine.Limit(time=timep))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
                             time.sleep(delay_seconds)
