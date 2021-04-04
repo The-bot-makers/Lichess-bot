@@ -171,6 +171,9 @@ def play_game(li, game_id, user_profile, config):
                             timelim=game.state["btime"]/1000
                             timelim=timelim/60
                             divtime=85-int(len(board.move_stack)/2)
+                            if divtime<1:
+                                li.resign(game_id)
+                                break
                             timep=round(timelim/divtime*60,1)
                             if timep>10:
                                 timep=10
@@ -201,9 +204,10 @@ def play_game(li, game_id, user_profile, config):
                             li.abort(game.id)
                         break
             else:
-                logger.info("game over")
-                engineeng.quit()
                 break
+    logger.info("game over")
+    engineeng.stop()
+    engineeng.quit()              
 
 def is_white_to_move(game, moves):
     return len(moves) % 2 == (0 if game.white_starts else 1)
