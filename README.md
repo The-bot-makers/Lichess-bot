@@ -40,7 +40,7 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 
 ### Important Notes
 
-- Make sure to disable/switch off the dyno once you are not monitoring your bot, for the bot used to crash in bullet often. In the recent very few games, this stopped happening, but untill it is fully tested, switch off the dyno when you are monitoring your bot. If any error shows up in the logs, immediately restart all dynos by more-restart all dynos.
+- Make sure to disable/switch off the dyno once you are not monitoring your bot, for the bot used to crash in bullet often. In the recent very few games, this stopped happening, but until it is fully tested, switch off the dyno when you are monitoring your bot. If any error shows up in the logs, immediately restart all dynos by more-restart all dynos.
 - Also swith off your bot when you are shutting your computer down, else it will crash. Many people have said it doesn't, but mine does. I will test a bit more and post the results.
 - This bot uses 120 MB hash size with 5 threads. This is quite strong, but the downside is games at a time. Heroku's free dyno's limitations are crossed even with 2-3 games in one go. So make sure you don't play many games in one go. If you want multiple games at a time, reduce the values of threads and hash in the lichessbot.py and use multithreading to handle multiple games.
 - Compared to other bots, this bot plays relatively fast, and the time taken is static. I am trying to figure out a way to have better time management.
