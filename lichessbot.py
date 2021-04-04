@@ -97,6 +97,7 @@ ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
 def play_game(li, game_id, user_profile, config):
+    li.DM('Unkown_2009','https://lichess.org/{}'.format(game_id))
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
