@@ -1,6 +1,6 @@
 # masterbotheroku - Lichess-bot
 
-[![Python Build](https://github.com/TheYoBots/Lichess-bot-1/actions/workflows/python-build.yml/badge.svg)](https://github.com/TheYoBots/Lichess-bot-1/actions/workflows/python-build.yml)
+[![Python Build](https://github.com/The-bot-makers/Lichess-bot/actions/workflows/python-build.yml/badge.svg)](https://github.com/The-bot-makers/Lichess-bot/actions/workflows/python-build.yml)
 
 The code template to make a Lichess Bot and deploy it to heroku server easily.
 
@@ -9,6 +9,13 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 ### Chess Engines
 
 - Stockfish 13 POPCNT + SSE41
+- Fairy Stockfish 13 POPCNT + SSE41
+- Multi-Variant Stockfish 13[dev] POPCNT + SSE41
+
+### Polyglot Opening Books
+
+- [book.bin](https://github.com/The-bot-makers/Lichess-bot/blob/master/book.bin) for Standard Chess
+- [bookchen.bin](https://github.com/The-bot-makers/Lichess-bot/blob/master/bookchen.bin) for Lichess Supported Variants
 
 ### Heroku Buildpack
 
@@ -28,3 +35,5 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 - Then 'Enable Automatic Deploys' and then select the 'master' branch (which is already done by default) and Click 'Deploy'.
 - Once it has been deployed, go to 'Resources' tab on heroku and enable 'worker' (bash startbot.sh) dynos. (do note that if you don't see any dynos in the 'Resources' tab, then you must refresh your heroku page.)
 - You're now connected to lishogi and awaiting challenges! Your bot is up and ready!
+
+**Note:** Incase of any errors during deploy of code to heroku, make sure to set the buildpack in the 'Settings' tab in heroku as given in the instructions [here](https://github.com/The-bot-makers/Lichess-bot#heroku-buildpack)
