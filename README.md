@@ -1,5 +1,7 @@
 # masterbotheroku - Lichess-bot
 
+[![Python Build](https://github.com/TheYoBots/Lichess-bot-1/actions/workflows/python-build.yml/badge.svg)](https://github.com/TheYoBots/Lichess-bot-1/actions/workflows/python-build.yml)
+
 The code template to make a Lichess Bot and deploy it to heroku server easily.
 
 This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.org](https://lichess.org)
