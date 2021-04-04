@@ -15,6 +15,7 @@ from config import load_config
 from conversation import Conversation, ChatLine
 from requests.exceptions import HTTPError, ReadTimeout
 import os
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -107,13 +108,13 @@ def play_game(li, game_id, user_profile, config):
     timelim=timelim/60
     if timelim>=0.5 and timelim<=2:
         bullet=True
-    time=round(timelim/85*60,1)
-    if time>6:
-        time=6
-    elif time<0.3:
-        time=0.3
+    timep=round(timelim/85*60,1)
+    if timep>6:
+        timep=6
+    elif timep<0.3:
+        timep=0.3
     if bullet:
-        time=0.3
+        timep=0.3
     board = setup_board(game)
     cfg = config["engine"]
 
@@ -144,7 +145,7 @@ def play_game(li, game_id, user_profile, config):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
         if len(weight)==0 or max(weight)<9:
-            move=engineeng.play(board)
+            move=engineeng.play(board,engine.Limit(white_clock=upd['wtime'],black_clock=upd['btime'],white_inc=upd['winc'],black_inc=upd['binc']))
             board.push(move.move)
             li.make_move(game.id, move.move)
             time.sleep(delay_seconds)
@@ -173,9 +174,10 @@ def play_game(li, game_id, user_profile, config):
                             moves.append(entry.move)
                             weight.append(entry.weight)
                         if len(weight)==0 or max(weight)<9:
-                            move=engineeng.play(board)
+                            move=engineeng.play(board,engine.Limit(white_clock=upd['wtime'],black_clock=upd['btime'],white_inc=upd['winc'],black_inc=upd['binc']))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
+                            time.sleep(delay_seconds)
                         else:
                             move=moves[weight.index(max(weight))]
                             board.push(move)
