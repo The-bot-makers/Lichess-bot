@@ -97,7 +97,6 @@ ponder_results = {}
 
 @backoff.on_exception(backoff.expo, BaseException, max_time=600, giveup=is_final)
 def play_game(li, game_id, user_profile, config):
-    li.DM('Unkown_2009','https://lichess.org/{}'.format(game_id))
     response = li.get_game_stream(game_id)
     lines = response.iter_lines()
     bullet=False
@@ -141,7 +140,7 @@ def play_game(li, game_id, user_profile, config):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
         if len(weight)==0 or max(weight)<9:
-            move=engineeng.play(board,engine.Limit(time=time))
+            move=engineeng.play(board,engine.Limit())
             board.push(move.move)
             li.make_move(game.id, move.move)
         else:
@@ -169,7 +168,7 @@ def play_game(li, game_id, user_profile, config):
                             moves.append(entry.move)
                             weight.append(entry.weight)
                         if len(weight)==0 or max(weight)<9:
-                            move=engineeng.play(board,engine.Limit(time=time))
+                            move=engineeng.play(board,engine.Limit())
                             board.push(move.move)
                             li.make_move(game.id, move.move)
                         else:
