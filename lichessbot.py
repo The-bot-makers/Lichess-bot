@@ -144,7 +144,7 @@ def play_game(li, game_id, user_profile, config):
                 movesob.append(entry.move)
                 weight.append(entry.weight)
         if len(weight)==0 or max(weight)<9:
-            move=engineeng.play(board,engine.Limit(white_clock=upd['wtime'],black_clock=upd['btime'],white_inc=upd['winc'],black_inc=upd['binc']))
+            move=engineeng.play(board,engine.Limit(white_clock=game.state['wtime'],black_clock=game.state['btime'],white_inc=game.state['winc'],black_inc=game.state['binc']))
             board.push(move.move)
             li.make_move(game.id, move.move)
             time.sleep(delay_seconds)
