@@ -172,13 +172,13 @@ def play_game(li, game_id, user_profile, config):
                             timelim=timelim/60
                             divtime=85-int(len(board.move_stack)/2)
                             if divtime<1:
-                                li.resign(game_id)
-                                break
-                            timep=round(timelim/divtime*60,1)
-                            if timep>10:
-                                timep=10
-                            elif timep<0.3:
-                                timep=0.3
+                                timep=1
+                            else:
+                                timep=round(timelim/divtime*60,1)
+                                if timep>10:
+                                    timep=10
+                                elif timep<0.3:
+                                    timep=0.3
                             move=engineeng.play(board,engine.Limit(time=timep))
                             board.push(move.move)
                             li.make_move(game.id, move.move)
