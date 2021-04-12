@@ -206,7 +206,6 @@ def play_game(li, game_id, user_profile, config):
             else:
                 break
     logger.info("game over")
-    engineeng.stop()
     engineeng.quit()              
 
 def is_white_to_move(game, moves):
