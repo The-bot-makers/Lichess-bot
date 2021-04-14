@@ -168,13 +168,15 @@ def play_game(li, game_id, user_profile, config):
                             moves.append(entry.move)
                             weight.append(entry.weight)
                         if len(weight)==0 or max(weight)<9:
-                            timelim=game.state["btime"]/1000
-                            timelim=timelim/60
+                            if game.is_white:
+                                timelim=game.state["wtime"]/1000
+                            else:
+                                timelim=game.state["btime"]/1000
                             divtime=85-int(len(board.move_stack)/2)
                             if divtime<1:
                                 timep=1
                             else:
-                                timep=round(timelim/divtime*60,1)
+                                timep=round(timelim/divtime,1)
                                 if timep>10:
                                     timep=10
                                 elif timep<0.3:
