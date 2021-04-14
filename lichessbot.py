@@ -12,7 +12,6 @@ from multiprocessing import Process
 import signal
 import backoff
 from config import load_config
-from conversation import Conversation, ChatLine
 from requests.exceptions import HTTPError, ReadTimeout
 import os
 import time
@@ -125,6 +124,8 @@ def play_game(li, game_id, user_profile, config):
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
+    engineeng.configure({'EvalFile':'nn-0e698aa9eb8b.nnue'})
+    engineeng.configure({'Use NNUE':True})
 
     logger.info("+++ {}".format(game))
 
