@@ -68,13 +68,12 @@ def start(li, user_profile, config):
         if event["type"] == "terminated":
             break
         elif event["type"] == "challenge":
-            logger.info("chlng detected")
             chlng = model.Challenge(event["challenge"])
             if chlng.is_supported(challenge_config):
-                logger.info("chlng supported")
                 try:
-                    logger.info("    Accept {}".format(chlng))
+                    logger.info("Accept {}".format(chlng))
                     response = li.accept_challenge(chlng.id)
+                    logger.info("Challenge Accept Response: {}".format(response))
                 except (HTTPError, ReadTimeout) as exception:
                     if isinstance(exception, HTTPError) and exception.response.status_code == 404: # ignore missing challenge
                         logger.info("    Skip missing {}".format(chlng))
@@ -85,9 +84,7 @@ def start(li, user_profile, config):
                 except:
                     pass
         elif event["type"] == "gameStart":
-            logger.info("game detected")
-            game_id = event["game"]["id"]
-            play_game(li, game_id, user_profile, config)
+            play_game(li, event["game"]["id"], user_profile, config)
             
     logger.info("Terminated")
     control_stream.terminate()
@@ -127,9 +124,8 @@ def play_game(li, game_id, user_profile, config):
     engineeng.configure({'EvalFile':'nn-0e698aa9eb8b.nnue'})
     engineeng.configure({'Use NNUE':True})
 
-    logger.info("+++ {}".format(game))
+    logger.info("Game Details: {}".format(game))
 
-    engine_cfg = config["engine"]
     delay_seconds = config.get("rate_limiting_delay", 0)/1000
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
