@@ -14,8 +14,8 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 
 ### Polyglot Opening Books
 
-- [book.bin](https://github.com/The-bot-makers/Lichess-bot/blob/master/book.bin) for Standard Chess
-- [bookchen.bin](https://github.com/The-bot-makers/Lichess-bot/blob/master/bookchen.bin) for Lichess Supported Variants(negligble size, antichess only. still in development.)
+- [book.bin](/book.bin) for Standard Chess
+- [bookchen.bin](/bookchen.bin) for Lichess Supported Variants(negligble size, antichess only. still in development.)
 
 ### Heroku Buildpack
 
@@ -28,7 +28,7 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 ### How to Use
 
 - Fork this repository.
-- Edit only your token in the config.yml file over [here](https://github.com/the-bot-makers/Lichess-bot/blob/master/config.yml#L1).
+- Edit only your token in the config.yml file over [here](/config.yml#L1).
 - Create a new heroku app.
 - Go to the 'Deploy' tab and click 'Connect to GitHub'.
 - Click on 'search' and then select your fork of this repository.
