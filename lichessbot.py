@@ -18,11 +18,8 @@ import time
 
 logger = logging.getLogger(__name__)
 
-try:
-    from http.client import RemoteDisconnected
-    # New in version 3.5: Previously, BadStatusLine('') was raised.
-except ImportError:
-    from http.client import BadStatusLine as RemoteDisconnected
+from http.client import RemoteDisconnected
+
 
 terminated = False
 
@@ -73,14 +70,14 @@ def start(li, user_profile, config):
                 try:
                     logger.info("Accept {}".format(chlng))
                     response = li.accept_challenge(chlng.id)
-                    logger.info("Challenge Accept Response: {}".format(response))
+                    logger.info("Challenge Accept Response  :{}".format(response))
                 except (HTTPError, ReadTimeout) as exception:
                     if isinstance(exception, HTTPError) and exception.response.status_code == 404: # ignore missing challenge
-                        logger.info("    Skip missing {}".format(chlng))
+                        logger.info("    Skip missing  :{}".format(chlng))
             else:
                 try:
                     li.decline_challenge(chlng.id)
-                    logger.info("    Decline {}".format(chlng))
+                    logger.info("    Decline  :{}".format(chlng))
                 except:
                     pass
         elif event["type"] == "gameStart":
@@ -121,10 +118,10 @@ def play_game(li, game_id, user_profile, config):
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
-    engineeng.configure({'EvalFile':'nn-9e3c6298299a.nnue'})
+    engineeng.configure({'EvalFile':'nn-56a5f1c4173a.nnue'})
     engineeng.configure({'Use NNUE':True})
 
-    logger.info("Game Details: {}".format(game))
+    logger.info("Game Details  :{}".format(game))
 
     delay_seconds = config.get("rate_limiting_delay", 0)/1000
 
