@@ -118,7 +118,6 @@ def play_game(li, game_id, user_profile, config):
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
-    engineeng.configure({'EvalFile':'nn-56a5f1c4173a.nnue'})
     engineeng.configure({'Use NNUE':True})
 
     logger.info("Game Details  :{}".format(game))
