@@ -109,13 +109,15 @@ def play_game(li, game_id, user_profile, config):
     if type(board).uci_variant=="chess":
         engine_path = os.path.join(cfg["dir"], cfg["name"])
         bookname="book.bin"
+        nnuename="nn-46832cfbead3.nnue"
     else:
         engine_path = os.path.join(cfg["dir"], cfg["variantname"])
         bookname="bookchen.bin"
+        nnuename="nn-46832cfbead3.nnue"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
-    engineeng.configure({'EvalFile':nn-46832cfbead3.nnue})
+    engineeng.configure({'EvalFile':nnuename})
     engineeng.configure({'Use NNUE':True})
 
     logger.info("Game Details  :{}".format(game))
