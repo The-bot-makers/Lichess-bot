@@ -9,8 +9,7 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 ### Chess Engines
 
 - Stockfish 14+(dev) POPCNT + SSE41
-- Fairy Stockfish 13 POPCNT + SSE41
-- Multi-Variant Stockfish 13 POPCNT + SSE41
+- Latest Fairy Stockfish POPCNT + SSE41
 
 ### Polyglot Opening Books
 
