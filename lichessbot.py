@@ -51,7 +51,7 @@ def watch_control_stream(control_queue, li):
                     control_queue.put_nowait(event)
                     logger.info(event)
         except:
-            logger.info("except")
+            logger.info("Network error: cannot get data from lichess! check your network connection  or try again in a few minutes.")
             pass
 
 def start(li, user_profile, config):
@@ -116,7 +116,7 @@ def play_game(li, game_id, user_profile, config):
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
     try:
-        engineeng.configure({'EvalFile':"nn-46832cfbead3.nnue"})
+        engineeng.configure({'EvalFile':"nn-517c4f68b5df.nnue"})
     except:
         pass
     engineeng.configure({'Use NNUE':True})
