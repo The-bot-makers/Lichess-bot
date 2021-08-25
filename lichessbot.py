@@ -51,7 +51,7 @@ def watch_control_stream(control_queue, li):
                     control_queue.put_nowait(event)
                     logger.info(event)
         except:
-            logger.info("except")
+            logger.info("Network error: cannot get data from lichess! check your network connection  or try again in a few minutes.")
             pass
 
 def start(li, user_profile, config):
