@@ -4,7 +4,7 @@
 
 The code template to make a Lichess Bot and deploy it to heroku server easily.
 
-This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.org](https://lichess.org)
+This is the code of [@master_bot](https://lichess.org/@/master_bot) and [@CometBot] (https://lichess.org/@/CometBot)in [lichess.org](https://lichess.org)
 
 ### Chess Engines
 
