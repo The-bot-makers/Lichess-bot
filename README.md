@@ -27,7 +27,6 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 ### How to Use
 
 - [Fork](https://github.com/The-bot-makers/Lichess-bot/fork) this repository.
-- Edit only your token in the `config.yml` file over [here](/config.yml#L1).
 - Create a [new heroku app](https://dashboard.heroku.com/new-app).
 - Go to the `Deploy` tab and click `Connect to GitHub`.
 - Click on `search` and then select your fork of this repository.
