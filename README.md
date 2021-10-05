@@ -27,12 +27,12 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 ### How to Use
 
 - [Fork](https://github.com/The-bot-makers/Lichess-bot/fork) this repository.
-- Edit only your token in the `config.yml` file over [here](/config.yml#L1).
 - Create a [new heroku app](https://dashboard.heroku.com/new-app).
 - Go to the `Deploy` tab and click `Connect to GitHub`.
 - Click on `search` and then select your fork of this repository.
 - Then `Enable Automatic Deploys` and then select the `main` branch (which is already done by default usually) and Click `Deploy`.
 - Once it has been deployed, go to `Resources` tab on heroku and enable `worker (bash startbot.sh)` dynos. (Do note that if you don't see any dynos in the `Resources` tab, then you must wait for about 5 minutes and then refresh your heroku page.)
+- Finally go to your `Settings` tab and then under `Config Vars` click on `Reveal Config Vars` and then in the place of `key` type in `LICHESS_BOT_TOKEN` and in the place of `value` add your Lichess Bot Token.
 - You're now connected to lichess and awaiting challenges! Your bot is up and ready!
 
 **Note:** Incase of any errors during deploy of code to heroku, make sure to set the buildpack in the 'Settings' tab in heroku as given in the instructions [here](https://github.com/The-bot-makers/Lichess-bot#heroku-buildpack)
