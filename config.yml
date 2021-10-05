@@ -4,7 +4,7 @@ url: "https://lichess.org/"  # lichess base URL
 engine:                      # engine settings
   dir: "./engines/"          # dir containing engines, relative to this project
   name: "sf"        # binary name of the engine to use
-  variantname: "vsf"
+  sfname: "vsf"
 
 abort_time: 20               # time to abort a game in seconds when there is no activity
 rate_limiting_delay: 0       # time (in ms) to delay after sending a move to prevent "Too Many Requests" errors
