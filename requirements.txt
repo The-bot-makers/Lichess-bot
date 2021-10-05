@@ -1,8 +1,0 @@
-certifi
-chardet
-idna
-chess
-PyYAML
-requests
-urllib3
-backoff
