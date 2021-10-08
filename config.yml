@@ -1,13 +1,53 @@
-token: "lip_MdfIkr72NQX2heAzGK7Y"    # lichess OAuth2 Token
+token: "lip_hgvo894njvQE4XRMkTDF"    # lichess OAuth2 Token
 url: "https://lichess.org/"  # lichess base URL
 
 engine:                      # engine settings
   dir: "./engines/"          # dir containing engines, relative to this project
   name: "sf"        # binary name of the engine to use
   variantname: "vsf"
+option name Contempt type spin : 24
+option name Analysis Contempt type combo : Both var Off var White var Black var Both
+option name Threads type spin : 20
+option name Hash type spin : 32768
+option name Ponder type check : true
+option name MultiPV type spin : 1
+option name Skill Level type spin : 20
+option name Move Overhead type spin : 5000
+option name nodestime type spin : 0
+option name UCI_Chess960 type check : false
+option name UCI_AnalyseMode type check : false
+option name UCI_LimitStrength type check : false
+option name UCI_Elo type spin : 2850
+option name UCI_ShowWDL type check : false
+option name SyzygyPath type string : <empty>
+option name SyzygyProbeDepth type spin : 100
+option name Syzygy50MoveRule type check : true
+option name SyzygyProbeLimit type spin : 7
+option name Use NNUE type check : true
+#    go_commands:             # additional options to pass to the UCI go command
+#      nodes: 5000               # Search so many nodes only.
+#      depth: 20               # Search depth ply only.
+#      movetime: 1         # Integer. Search exactly movetime milliseconds.
+#  xboard_options:            # arbitrary xboard options passed to the engine
+#    cores: "4"
+#    memory: "4096"
+#    egtpath:                 # dir containing egtb, relative to this project
+#     gaviota: "Gaviota path"
+#     nalimov: "Nalimov Path"
+#     scorpio: "Scorpio Path"
+#     syzygy: "Syzygy Path"
+#  silence_stderr: false      # some engines (yes you, leela) are very noisy
 
-abort_time: 20               # time to abort a game in seconds when there is no activity
-rate_limiting_delay: 0       # time (in ms) to delay after sending a move to prevent "Too Many Requests" errors
+abort_time: 30               # time to abort a game in seconds when there is no activity
+fake_think_time: false       # artificially slow down the bot to pretend like it's thinking
+
+challenge:                   # incoming challenges
+  concurrency: 1             # number of games to play simultaneously
+  sort_by: "best"            # possible values: "best", "first"
+  accept_bot: true          # accepts challenges coming from other bots
+  only_bot: false            # accept challenges by bots only
+  max_increment: 180         # maximum amount of increment to accaept a challenge. the max is 180. set to 0 for no increment
+  min_increment: 0           # minimum amount of increment to accept a challenge
 
 challenge:                   # incoming challenges
   accept_bot: true          # accepts challenges coming from other bots
