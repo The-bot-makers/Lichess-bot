@@ -8,13 +8,12 @@ This is the code of [@master_bot](https://lichess.org/@/master_bot) in [lichess.
 
 ### Chess Engines
 
-- Stockfish 14+(dev) POPCNT + SSE41
-- Latest Fairy Stockfish POPCNT + SSE41
+- Stockfish 14.1+(dev) POPCNT + SSE41
+- v14 Fairy Stockfish POPCNT + SSE41
 
 ### Polyglot Opening Books
 
-- [book.bin](/book.bin) for Standard Chess
-- [bookchen.bin](/bookchen.bin) for Lichess Supported Variants(negligble size, antichess only. still in development.)
+- [book.bin](/book.bin) for all chess variants
 
 ### Heroku Buildpack
 
