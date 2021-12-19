@@ -51,7 +51,7 @@ def watch_control_stream(control_queue, li):
                     control_queue.put_nowait(event)
                     logger.info(event)
         except:
-            logger.info("Network error: cannot get data from lichess! check your network connection  or try again in a few minutes.")
+            logger.info("Network error:Cannot get data from lichess! Check your network connection or try again in a few minutes.")
             pass
 
 def start(li, user_profile, config):
@@ -108,15 +108,13 @@ def play_game(li, game_id, user_profile, config):
 
     if type(board).uci_variant=="chess":
         engine_path = os.path.join(cfg["dir"], cfg["name"])
-        bookname="book.bin"
     else:
         engine_path = os.path.join(cfg["dir"], cfg["variantname"])
-        bookname="bookchen.bin"
     engineeng = engine.SimpleEngine.popen_uci(engine_path)
     engineeng.configure({'Threads':5})
     engineeng.configure({'Hash':120})
     try:
-        engineeng.configure({'EvalFile':"nn-517c4f68b5df.nnue"})
+        engineeng.configure({'EvalFile':"nn-4f56ecfca5b7.nnue"})
     except:
         pass
     engineeng.configure({'Use NNUE':True})
@@ -126,7 +124,7 @@ def play_game(li, game_id, user_profile, config):
     delay_seconds = config.get("rate_limiting_delay", 0)/1000
 
     if is_engine_move(game, board.move_stack) and not is_game_over(game):
-        with chess.polyglot.open_reader(bookname) as reader:
+        with chess.polyglot.open_reader("book.bin") as reader:
             movesob=[]
             weight=[]
             for entry in reader.find_all(board):
@@ -142,7 +140,7 @@ def play_game(li, game_id, user_profile, config):
             board.push(move)
             li.make_move(game.id, move)
 
-    with chess.polyglot.open_reader(bookname) as reader:
+    with chess.polyglot.open_reader("book.bin") as reader:
         while not terminated:
             try:
                 binary_chunk = next(lines)
@@ -156,33 +154,61 @@ def play_game(li, game_id, user_profile, config):
                     moves = upd["moves"].split()
                     board = update_board(board, moves[-1])
                     if not is_game_over(game) and is_engine_move(game, moves):
-                        moves=[]
-                        weight=[]
-                        for entry in reader.find_all(board):
-                            moves.append(entry.move)
-                            weight.append(entry.weight)
-                        if len(weight)==0 or max(weight)<9:
-                            if game.is_white:
-                                timelim=game.state["wtime"]/1000
+                        if chess.popcount(board.occupied)<=7:
+                            move=egtb_move(li,board,game)
+                            if move != None:
+                                board.push(move)
+                                li.make_move(game.id,move)
                             else:
-                                timelim=game.state["btime"]/1000
-                            divtime=85-int(len(board.move_stack)/2)
-                            if divtime<1:
-                                timep=1
+                                moves=[]
+                            weight=[]
+                            for entry in reader.find_all(board):
+                                moves.append(entry.move)
+                                weight.append(entry.weight)
+                            if len(weight)==0 or max(weight)<9:
+                                timelim=game.state["wtime"]/1000 if game.is_white else game.state["btime"]/1000
+                                divtime=85-int(len(board.move_stack)/2)
+                                if divtime<1:
+                                    timep=1
+                                else:
+                                    timep=round(timelim/divtime,1)
+                                    if timep>10:
+                                        timep=10
+                                    elif timep<0.3:
+                                        timep=0.3
+                                move=engineeng.play(board,engine.Limit(time=timep))
+                                board.push(move.move)
+                                li.make_move(game.id, move.move)
+                                time.sleep(delay_seconds)
                             else:
-                                timep=round(timelim/divtime,1)
-                                if timep>10:
-                                    timep=10
-                                elif timep<0.3:
-                                    timep=0.3
-                            move=engineeng.play(board,engine.Limit(time=timep))
-                            board.push(move.move)
-                            li.make_move(game.id, move.move)
-                            time.sleep(delay_seconds)
+                                move=moves[weight.index(max(weight))]
+                                board.push(move)
+                                li.make_move(game.id, move)
                         else:
-                            move=moves[weight.index(max(weight))]
-                            board.push(move)
-                            li.make_move(game.id, move)
+                            moves=[]
+                            weight=[]
+                            for entry in reader.find_all(board):
+                                moves.append(entry.move)
+                                weight.append(entry.weight)
+                            if len(weight)==0 or max(weight)<9:
+                                timelim=game.state["wtime"]/1000 if game.is_white else game.state["btime"]/1000
+                                divtime=85-int(len(board.move_stack)/2)
+                                if divtime<1:
+                                    timep=1
+                                else:
+                                    timep=round(timelim/divtime,1)
+                                    if timep>10:
+                                        timep=10
+                                    elif timep<0.3:
+                                        timep=0.3
+                                move=engineeng.play(board,engine.Limit(time=timep))
+                                board.push(move.move)
+                                li.make_move(game.id, move.move)
+                                time.sleep(delay_seconds)
+                            else:
+                                move=moves[weight.index(max(weight))]
+                                board.push(move)
+                                li.make_move(game.id, move)
                             
                     if board.turn == chess.WHITE:
                         game.ping(config.get("abort_time", 20), (upd["wtime"] + upd["winc"]) / 1000 + 60)
@@ -239,11 +265,32 @@ def update_board(board, move):
         logger.debug('Ignoring illegal move {} on board {}'.format(move, board.fen()))
     return board
 
+def egtb_move(li,board,game):
+    try:
+        if board.uci_variant not in ["chess", "antichess", "atomic"]:
+            return None
+        name_to_wld = {"loss": -2, "maybe-loss": -1, "blessed-loss": -1, "draw": 0, "cursed-win": 1, "maybe-win": 1, "win": 2}
+        max_pieces = 7 if board.uci_variant == "chess" else 6
+        variant = "standard" if board.uci_variant == "chess" else board.uci_variant
+        if chess.popcount<=max_pieces:
+            data = li.api_get(f"http://tablebase.lichess.ovh/{variant}?fen={board.fen()}")
+            move = data["moves"][0]["uci"]
+            wdl = name_to_wld[data["moves"][0]["category"]] * -1
+            dtz = data["moves"][0]["dtz"] * -1
+            dtm = data["moves"][0]["dtm"]
+            if dtm:
+                dtm *= -1
+            if wdl != None:
+                return move
+            else:
+                return None
+    except:
+        return None
 def intro():
     return r"""
     .   _/|
     .  // o\
-    .  || ._)  lichess-bot
+    .  ||  _)  lichess-bot
     .  //__\
     .  )___(   Play on Lichess with a bot
     """
@@ -260,14 +307,14 @@ if __name__=="__main__":
                         format="%(asctime)-15s: %(message)s")
     logger.info(intro())
     CONFIG = load_config(args.config or "./config.yml")
-    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], "1.1.5")
+    li = lichess.Lichess(CONFIG["token"], CONFIG["url"], "1.2.0")
 
     user_profile = li.get_profile()
     username = user_profile["username"]
     is_bot = user_profile.get("title") == "BOT"
     logger.info("Welcome {}!".format(username))
 
-    if is_bot is False:
+    if not is_bot:
         is_bot = upgrade_account(li)
 
     if is_bot:
